@@ -133,8 +133,8 @@ See [docs/deployment.md](docs/deployment.md). Docker images are provided for bot
 
 ## Deliveries roadmap
 
-- **Entrega 1 (this):** Monorepo, API foundation (auth, users, health, Swagger), full DB schema, web shell (login + dashboard), Docker, CI, docs.
-- **Entrega 2:** Contacts, Companies, Leads, Pipeline, Interactions, Follow-ups (functional CRM).
+- **Entrega 1 (done):** Monorepo, API foundation (auth, users, health, Swagger), full DB schema, web shell (login + dashboard), Docker, CI, docs.
+- **Entrega 2 (done):** Contacts, Companies, Leads, Pipeline, Interactions, Follow-ups — functional CRM API.
 - **Entrega 3:** Products, Inventory, Orders, Order Items.
 - **Entrega 4:** Dashboard metrics, filters, lead origin & loss analytics.
 

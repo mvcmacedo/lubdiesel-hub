@@ -11,7 +11,13 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { PrismaModule } from './database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CompaniesModule } from './modules/companies/companies.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
+import { FollowUpsModule } from './modules/follow-ups/follow-ups.module';
 import { HealthModule } from './modules/health/health.module';
+import { InteractionsModule } from './modules/interactions/interactions.module';
+import { LeadsModule } from './modules/leads/leads.module';
+import { PipelineModule } from './modules/pipeline/pipeline.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -60,6 +66,12 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     HealthModule,
+    CompaniesModule,
+    ContactsModule,
+    LeadsModule,
+    PipelineModule,
+    InteractionsModule,
+    FollowUpsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

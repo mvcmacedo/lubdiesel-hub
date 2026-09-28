@@ -69,7 +69,70 @@ Rate limiting: `login` is limited to 5 requests/60s, `refresh` to 10/60s.
 
 List endpoints accept: `page`, `pageSize` (max 100), `search`, `sortBy`, `sortOrder` (`asc`/`desc`).
 
-## Planned endpoints (Entrega 2+)
+## CRM (Entrega 2)
 
-`/api/v1/contacts`, `/api/v1/companies`, `/api/v1/leads`, `/api/v1/follow-ups`, `/api/v1/products`,
-`/api/v1/inventory`, `/api/v1/orders`, `/api/v1/dashboard`.
+All CRM endpoints require a Bearer token (any authenticated user).
+
+### Companies — `/api/v1/companies`
+
+| Method | Path   | Description                                   |
+| ------ | ------ | --------------------------------------------- |
+| POST   | `/`    | Create a company                              |
+| GET    | `/`    | List (filters: `type`, `city`, `state`, `search`) |
+| GET    | `/:id` | Get by id                                     |
+| PATCH  | `/:id` | Update                                        |
+| DELETE | `/:id` | Soft-delete                                   |
+
+### Contacts — `/api/v1/contacts`
+
+| Method | Path   | Description                                                        |
+| ------ | ------ | ----------------------------------------------------------------- |
+| POST   | `/`    | Create a contact                                                  |
+| GET    | `/`    | List (filters: `type`, `source`, `assignedUserId`, `companyId`, `state`, `search`) |
+| GET    | `/:id` | Get by id (includes company + owner)                              |
+| PATCH  | `/:id` | Update                                                            |
+| DELETE | `/:id` | Soft-delete                                                       |
+
+### Leads — `/api/v1/leads`
+
+| Method | Path          | Description                                                             |
+| ------ | ------------- | ---------------------------------------------------------------------- |
+| POST   | `/`           | Create a lead (records initial stage history)                          |
+| GET    | `/`           | List (filters: `status`, `source`, `assignedUserId`, `contactId`, `search`) |
+| GET    | `/:id`        | Get a lead with its stage history                                      |
+| PATCH  | `/:id`        | Update (source, value, owner)                                          |
+| PATCH  | `/:id/stage`  | Change stage — records history; `WON` sets `convertedAt` and converts the contact to `CUSTOMER`; `LOST` requires `lostReason` |
+| DELETE | `/:id`        | Soft-delete                                                            |
+
+### Pipeline — `/api/v1/pipeline`
+
+| Method | Path                | Description                                            |
+| ------ | ------------------- | ------------------------------------------------------ |
+| GET    | `/`                 | Kanban board grouped by stage (filters: `source`, `assignedUserId`) |
+| PATCH  | `/leads/:id/move`   | Move a lead to another stage (same rules as stage change) |
+
+### Interactions — `/api/v1/interactions`
+
+| Method | Path | Description                                              |
+| ------ | ---- | -------------------------------------------------------- |
+| POST   | `/`  | Record an interaction (must reference a contact or lead) |
+| GET    | `/`  | Timeline (filters: `contactId`, `leadId`, `type`)        |
+
+### Follow-ups — `/api/v1/follow-ups`
+
+| Method | Path            | Description                                                     |
+| ------ | --------------- | -------------------------------------------------------------- |
+| POST   | `/`             | Schedule a follow-up (owner defaults to current user)          |
+| GET    | `/`             | List (filters: `status`, `type`, `scope`, `assignedUserId`, `leadId`, `contactId`) |
+| GET    | `/summary`      | Counts of `today` / `overdue` / `upcoming` (optional `assignedUserId`) |
+| GET    | `/:id`          | Get by id                                                      |
+| PATCH  | `/:id`          | Update                                                         |
+| PATCH  | `/:id/complete` | Mark as completed                                             |
+| PATCH  | `/:id/cancel`   | Cancel                                                        |
+
+`scope` is a convenience filter over `PENDING` follow-ups by scheduled date: `today`, `overdue`, `upcoming`.
+
+## Planned endpoints (Entrega 3+)
+
+`/api/v1/products`, `/api/v1/inventory`, `/api/v1/orders`, `/api/v1/dashboard`.
+
