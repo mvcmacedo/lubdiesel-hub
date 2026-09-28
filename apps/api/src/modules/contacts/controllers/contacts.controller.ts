@@ -41,6 +41,12 @@ export class ContactsController {
     return this.contactsService.findOne(id);
   }
 
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Get a contact with its full commercial history' })
+  getHistory(@Param('id', ParseUUIDPipe) id: string) {
+    return this.contactsService.getHistory(id);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update a contact' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateContactDto) {

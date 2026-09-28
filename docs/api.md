@@ -132,7 +132,55 @@ All CRM endpoints require a Bearer token (any authenticated user).
 
 `scope` is a convenience filter over `PENDING` follow-ups by scheduled date: `today`, `overdue`, `upcoming`.
 
-## Planned endpoints (Entrega 3+)
+### Commercial history
 
-`/api/v1/products`, `/api/v1/inventory`, `/api/v1/orders`, `/api/v1/dashboard`.
+`GET /api/v1/contacts/:id/history` returns a contact together with its leads (and stage history),
+interactions, follow-ups and orders — the consolidated commercial timeline.
+
+## Catalog, inventory & sales (Entrega 3)
+
+### Products — `/api/v1/products`
+
+| Method | Path   | Description                                       |
+| ------ | ------ | ------------------------------------------------- |
+| POST   | `/`    | Create a product (unique SKU)                     |
+| GET    | `/`    | List (filter `active`, search by sku/name)        |
+| GET    | `/:id` | Get by id                                         |
+| PATCH  | `/:id` | Update (also used to activate/deactivate)         |
+| DELETE | `/:id` | Soft-delete                                       |
+
+### Inventory — `/api/v1/inventory`
+
+| Method | Path                     | Description                                              |
+| ------ | ------------------------ | -------------------------------------------------------- |
+| POST   | `/movements`             | Register a stock movement                                |
+| GET    | `/movements`             | List movements (filter by `productId`, `type`)           |
+| GET    | `/balance`               | Current balance for every product                        |
+| GET    | `/products/:id/balance`  | Current balance for a single product                     |
+
+Balance is derived from movements: `PURCHASE`/`RETURN` add, `SALE`/`SAMPLE`/`INTERNAL_USE`/`GIFT`/`LOSS`
+subtract, and `ADJUSTMENT` is signed. There is no mutable `quantity` column — movements are the source of truth.
+
+### Orders — `/api/v1/orders`
+
+| Method | Path                  | Description                                                           |
+| ------ | --------------------- | -------------------------------------------------------------------- |
+| POST   | `/`                   | Create an order with items (snapshots cost/sale price, computes totals) |
+| GET    | `/`                   | List (filter by `status`, `source`, `contactId`, `companyId`)        |
+| GET    | `/:id`                | Get an order with its items                                          |
+| PATCH  | `/:id`                | Update (DRAFT/PENDING only)                                          |
+| POST   | `/:id/items`          | Add an item (DRAFT/PENDING only)                                     |
+| DELETE | `/:id/items/:itemId`  | Remove an item (DRAFT/PENDING only)                                  |
+| PATCH  | `/:id/status`         | Change status — `COMPLETED` validates stock and writes SALE movements atomically |
+| DELETE | `/:id`                | Soft-delete (not allowed when `COMPLETED`)                           |
+
+## Dashboard & analytics (Entrega 4) — `/api/v1/dashboard`
+
+| Method | Path             | Description                                                       |
+| ------ | ---------------- | ---------------------------------------------------------------- |
+| GET    | `/summary`       | Cards (leads/customers/resellers/sales/revenue/stock), pipeline counts, follow-up summary |
+| GET    | `/lead-sources`  | Lead count grouped by origin                                     |
+| GET    | `/loss-reasons`  | Lost-lead count grouped by reason                                |
+| GET    | `/sales?days=30` | Daily completed-order totals for the last N days                 |
+
 

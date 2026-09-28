@@ -135,8 +135,8 @@ See [docs/deployment.md](docs/deployment.md). Docker images are provided for bot
 
 - **Entrega 1 (done):** Monorepo, API foundation (auth, users, health, Swagger), full DB schema, web shell (login + dashboard), Docker, CI, docs.
 - **Entrega 2 (done):** Contacts, Companies, Leads, Pipeline, Interactions, Follow-ups — functional CRM API.
-- **Entrega 3:** Products, Inventory, Orders, Order Items.
-- **Entrega 4:** Dashboard metrics, filters, lead origin & loss analytics.
+- **Entrega 3 (done):** Products, Inventory (movement-based balances), Orders & Order Items (stock write-off on completion).
+- **Entrega 4 (done):** Dashboard metrics, lead-origin & loss-reason analytics, sales series, commercial history; web dashboard wired to live data.
 
 ## License
 

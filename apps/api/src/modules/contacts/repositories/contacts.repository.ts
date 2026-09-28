@@ -24,6 +24,31 @@ export class ContactsRepository {
     });
   }
 
+  /** Contact with its full commercial history (leads, interactions, follow-ups, orders). */
+  findByIdWithHistory(id: string): Promise<Contact | null> {
+    return this.prisma.contact.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        company: true,
+        assignedUser: { select: { id: true, name: true, email: true } },
+        leads: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          include: { stageHistory: { orderBy: { createdAt: 'asc' } } },
+        },
+        interactions: { orderBy: { createdAt: 'desc' }, take: 100 },
+        followUps: { orderBy: { scheduledAt: 'desc' } },
+        orders: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            items: { include: { product: { select: { id: true, sku: true, name: true } } } },
+          },
+        },
+      },
+    });
+  }
+
   create(data: Prisma.ContactCreateInput): Promise<Contact> {
     return this.prisma.contact.create({ data });
   }

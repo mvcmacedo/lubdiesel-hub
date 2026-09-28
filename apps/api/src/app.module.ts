@@ -10,14 +10,18 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { PrismaModule } from './database/prisma.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { FollowUpsModule } from './modules/follow-ups/follow-ups.module';
 import { HealthModule } from './modules/health/health.module';
 import { InteractionsModule } from './modules/interactions/interactions.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import { PipelineModule } from './modules/pipeline/pipeline.module';
+import { ProductsModule } from './modules/products/products.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -72,6 +76,10 @@ import { UsersModule } from './modules/users/users.module';
     PipelineModule,
     InteractionsModule,
     FollowUpsModule,
+    ProductsModule,
+    InventoryModule,
+    OrdersModule,
+    AnalyticsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

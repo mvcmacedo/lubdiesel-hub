@@ -32,6 +32,15 @@ export class ContactsService {
     return this.getExisting(id);
   }
 
+  /** Returns the contact together with its commercial history. */
+  async getHistory(id: string): Promise<Contact> {
+    const contact = await this.contactsRepository.findByIdWithHistory(id);
+    if (!contact) {
+      throw new NotFoundException('Contact not found');
+    }
+    return contact;
+  }
+
   async update(id: string, dto: UpdateContactDto): Promise<Contact> {
     await this.getExisting(id);
     await this.validateRelations(dto.assignedUserId, dto.companyId);
