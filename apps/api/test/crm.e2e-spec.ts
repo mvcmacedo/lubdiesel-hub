@@ -36,7 +36,9 @@ describe('CRM flow (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('runs the full lead lifecycle and converts the contact', async () => {

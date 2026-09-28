@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -24,6 +24,7 @@ export class EnvironmentVariables {
   @IsEnum(NodeEnv)
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(65535)
@@ -46,6 +47,7 @@ export class EnvironmentVariables {
   @IsString()
   JWT_REFRESH_EXPIRES_IN = '7d';
 
+  @Type(() => Number)
   @IsInt()
   @Min(4)
   @Max(15)
@@ -57,10 +59,12 @@ export class EnvironmentVariables {
   @IsString()
   LOG_LEVEL = 'info';
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   THROTTLE_TTL = 60;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   THROTTLE_LIMIT = 10;

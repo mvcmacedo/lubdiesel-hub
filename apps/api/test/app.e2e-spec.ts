@@ -31,7 +31,9 @@ describe('Auth & Health (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('GET /health returns ok', async () => {
