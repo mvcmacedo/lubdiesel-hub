@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lubdiesel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lubdiesel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lubdiesel}
+      POSTGRES_DB: ${POSTGRES_DB:-lubdiesel}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-lubdiesel}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional cache — enable with: docker compose --profile cache up
+  redis:
+    image: redis:7-alpine
+    container_name: lubdiesel-redis
+    restart: unless-stopped
+    profiles: ['cache']
+    ports:
+      - '6379:6379'
+
+  # Optional full-stack containers — enable with: docker compose --profile apps up --build
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: lubdiesel-api
+    profiles: ['apps']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lubdiesel}:${POSTGRES_PASSWORD:-lubdiesel}@postgres:5432/${POSTGRES_DB:-lubdiesel}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-me-access-secret-min-32-characters}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-min-32-chars}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    ports:
+      - '3001:3001'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: lubdiesel-web
+    profiles: ['apps']
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api/v1}
+    ports:
+      - '3000:3000'
+
+volumes:
+  pgdata:

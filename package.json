@@ -1,0 +1,36 @@
+{
+  "name": "lubdiesel-commercial-hub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lubdiesel Commercial Hub — internal commercial operations platform (CRM, pipeline, inventory, orders).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @lubdiesel/shared && npm run build -w @lubdiesel/api && npm run build -w @lubdiesel/web",
+    "build:shared": "npm run build -w @lubdiesel/shared",
+    "dev": "npm run build:shared && concurrently -n api,web -c yellow,cyan \"npm run dev -w @lubdiesel/api\" \"npm run dev -w @lubdiesel/web\"",
+    "dev:api": "npm run dev -w @lubdiesel/api",
+    "dev:web": "npm run dev -w @lubdiesel/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "concurrently": "^9.0.1",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}

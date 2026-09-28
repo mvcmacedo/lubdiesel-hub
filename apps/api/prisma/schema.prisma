@@ -1,0 +1,432 @@
+// Lubdiesel Commercial Hub — Prisma schema
+// Naming: models in PascalCase, tables/columns in snake_case via @map/@@map.
+// Enums are kept in sync with packages/shared/src/enums.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum ContactType {
+  LEAD
+  CUSTOMER
+  RESELLER
+  WORKSHOP
+  FLEET
+  SUPPLIER
+  OTHER
+}
+
+enum CompanyType {
+  WORKSHOP
+  RESELLER
+  DISTRIBUTOR
+  FLEET
+  SUPPLIER
+  OTHER
+}
+
+enum CustomerType {
+  PERSON
+  COMPANY
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  NEGOTIATION
+  WON
+  WAITING
+  LOST
+}
+
+enum LeadSource {
+  TOYOCENTER
+  LUBDIESEL_WEBSITE
+  INSTAGRAM_TOYOCENTER
+  INSTAGRAM_LUBDIESEL
+  WHATSAPP
+  MERCADO_LIVRE
+  REFERRAL
+  PERSONAL_NETWORK
+  EVENT
+  RESELLER
+  OTHER
+}
+
+enum LostReason {
+  PRICE
+  NO_RESPONSE
+  NO_INTEREST
+  COMPETITOR
+  NO_STOCK
+  TIMING
+  OTHER
+}
+
+enum FollowUpType {
+  CALL
+  WHATSAPP
+  EMAIL
+  MEETING
+  OTHER
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum InteractionType {
+  CALL
+  WHATSAPP
+  EMAIL
+  MEETING
+  NOTE
+  SYSTEM
+}
+
+enum InventoryMovementType {
+  PURCHASE
+  SALE
+  SAMPLE
+  INTERNAL_USE
+  GIFT
+  LOSS
+  ADJUSTMENT
+  RETURN
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  PAID
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderSource {
+  WHATSAPP
+  MERCADO_LIVRE
+  INSTAGRAM
+  TOYOCENTER
+  DIRECT
+  RESELLER
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
+// Identity & auth
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(USER)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  refreshTokens     RefreshToken[]
+  assignedContacts  Contact[]
+  assignedLeads     Lead[]
+  assignedFollowUps FollowUp[]
+  interactions      Interaction[]
+  inventoryMoves    InventoryMovement[]
+  orders            Order[]
+  stageChanges      LeadStageHistory[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// CRM
+// ---------------------------------------------------------------------------
+
+model Contact {
+  id             String      @id @default(uuid())
+  firstName      String      @map("first_name")
+  lastName       String?     @map("last_name")
+  phone          String?
+  whatsapp       String?
+  email          String?
+  city           String?
+  state          String?
+  type           ContactType @default(LEAD)
+  source         LeadSource?
+  notes          String?
+  assignedUserId String?     @map("assigned_user_id")
+  companyId      String?     @map("company_id")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  deletedAt      DateTime?   @map("deleted_at")
+
+  assignedUser User?         @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  company      Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  leads        Lead[]
+  followUps    FollowUp[]
+  interactions Interaction[]
+  orders       Order[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([whatsapp])
+  @@index([type])
+  @@index([assignedUserId])
+  @@index([createdAt])
+  @@map("contacts")
+}
+
+model Company {
+  id        String      @id @default(uuid())
+  name      String
+  legalName String?     @map("legal_name")
+  document  String?
+  type      CompanyType @default(OTHER)
+  phone     String?
+  whatsapp  String?
+  email     String?
+  city      String?
+  state     String?
+  notes     String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+
+  contacts Contact[]
+  orders   Order[]
+
+  @@index([document])
+  @@index([type])
+  @@map("companies")
+}
+
+model Lead {
+  id             String      @id @default(uuid())
+  contactId      String      @map("contact_id")
+  status         LeadStatus  @default(NEW)
+  source         LeadSource
+  estimatedValue Decimal?    @map("estimated_value") @db.Decimal(12, 2)
+  assignedUserId String?     @map("assigned_user_id")
+  lostReason     LostReason? @map("lost_reason")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  convertedAt    DateTime?   @map("converted_at")
+  deletedAt      DateTime?   @map("deleted_at")
+
+  contact      Contact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  assignedUser User?              @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  followUps    FollowUp[]
+  interactions Interaction[]
+  stageHistory LeadStageHistory[]
+
+  @@index([status])
+  @@index([source])
+  @@index([assignedUserId])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+model LeadStageHistory {
+  id          String      @id @default(uuid())
+  leadId      String      @map("lead_id")
+  fromStatus  LeadStatus? @map("from_status")
+  toStatus    LeadStatus  @map("to_status")
+  changedById String?     @map("changed_by_id")
+  note        String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  lead      Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  changedBy User? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@map("lead_stage_history")
+}
+
+model Interaction {
+  id          String          @id @default(uuid())
+  contactId   String?         @map("contact_id")
+  leadId      String?         @map("lead_id")
+  type        InteractionType
+  description String
+  createdById String?         @map("created_by_id")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("interactions")
+}
+
+model FollowUp {
+  id             String         @id @default(uuid())
+  leadId         String?        @map("lead_id")
+  contactId      String?        @map("contact_id")
+  assignedUserId String?        @map("assigned_user_id")
+  type           FollowUpType
+  scheduledAt    DateTime       @map("scheduled_at")
+  completedAt    DateTime?      @map("completed_at")
+  notes          String?
+  status         FollowUpStatus @default(PENDING)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  lead         Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  contact      Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  assignedUser User?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+
+  @@index([assignedUserId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("follow_ups")
+}
+
+// ---------------------------------------------------------------------------
+// Catalog & inventory
+// ---------------------------------------------------------------------------
+
+model Product {
+  id          String    @id @default(uuid())
+  sku         String    @unique
+  name        String
+  description String?
+  volumeMl    Int       @map("volume_ml")
+  costPrice   Decimal   @map("cost_price") @db.Decimal(12, 2)
+  salePrice   Decimal   @map("sale_price") @db.Decimal(12, 2)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  movements  InventoryMovement[]
+  orderItems OrderItem[]
+
+  @@index([sku])
+  @@index([active])
+  @@map("products")
+}
+
+model InventoryMovement {
+  id          String                @id @default(uuid())
+  productId   String                @map("product_id")
+  type        InventoryMovementType
+  quantity    Int
+  unit        String                @default("unit")
+  reason      String?
+  referenceId String?               @map("reference_id")
+  createdById String?               @map("created_by_id")
+  createdAt   DateTime              @default(now()) @map("created_at")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("inventory_movements")
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+model Order {
+  id          String      @id @default(uuid())
+  contactId   String?     @map("contact_id")
+  companyId   String?     @map("company_id")
+  status      OrderStatus @default(DRAFT)
+  source      OrderSource @default(DIRECT)
+  subtotal    Decimal     @default(0) @db.Decimal(12, 2)
+  discount    Decimal     @default(0) @db.Decimal(12, 2)
+  total       Decimal     @default(0) @db.Decimal(12, 2)
+  notes       String?
+  createdById String?     @map("created_by_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  completedAt DateTime?   @map("completed_at")
+  deletedAt   DateTime?   @map("deleted_at")
+
+  contact   Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  company   Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  createdBy User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  items     OrderItem[]
+
+  @@index([status])
+  @@index([source])
+  @@index([contactId])
+  @@index([companyId])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String  @map("order_id")
+  productId String  @map("product_id")
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(12, 2)
+  costPrice Decimal @map("cost_price") @db.Decimal(12, 2)
+  subtotal  Decimal @db.Decimal(12, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ---------------------------------------------------------------------------
+// Auditing
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  entity    String
+  entityId  String   @map("entity_id")
+  action    String
+  userId    String?  @map("user_id")
+  changes   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
