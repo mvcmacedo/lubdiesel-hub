@@ -138,6 +138,8 @@ See [docs/deployment.md](docs/deployment.md). Docker images are provided for bot
 - **Entrega 3 (done):** Products, Inventory (movement-based balances), Orders & Order Items (stock write-off on completion).
 - **Entrega 4 (done):** Dashboard metrics, lead-origin & loss-reason analytics, sales series, commercial history; web dashboard wired to live data.
 
+**Web admin UI (done):** full CRUD screens for all modules — contacts (with commercial history & quick actions), companies, leads, **pipeline Kanban (drag-and-drop)**, follow-ups (scopes + complete/cancel), products, inventory (balances + movements), orders (multi-item + status/stock), reports and settings (users).
+
 ## License
 
 UNLICENSED — internal Lubdiesel project.

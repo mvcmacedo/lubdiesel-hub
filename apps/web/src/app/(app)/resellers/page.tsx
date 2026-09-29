@@ -1,7 +1,13 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
+'use client';
+
+import { ContactsView } from '@/components/features/contacts-view';
 
 export default function ResellersPage() {
   return (
-    <PagePlaceholder title="Revendedores" description="Rede de potenciais e atuais revendedores." />
+    <ContactsView
+      title="Revendedores"
+      description="Rede de potenciais e atuais revendedores."
+      fixedType="RESELLER"
+    />
   );
 }

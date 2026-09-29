@@ -1,8 +1,10 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
+'use client';
+
+import { ContactsView } from '@/components/features/contacts-view';
 
 export default function ContactsPage() {
   return (
-    <PagePlaceholder
+    <ContactsView
       title="Contatos"
       description="Gestão de contatos e histórico de relacionamento."
     />

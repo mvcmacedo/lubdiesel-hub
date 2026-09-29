@@ -1,5 +1,13 @@
-import { PagePlaceholder } from '@/components/ui/page-placeholder';
+'use client';
+
+import { ContactsView } from '@/components/features/contacts-view';
 
 export default function CustomersPage() {
-  return <PagePlaceholder title="Clientes" description="Clientes pessoa física e jurídica." />;
+  return (
+    <ContactsView
+      title="Clientes"
+      description="Contatos convertidos em clientes."
+      fixedType="CUSTOMER"
+    />
+  );
 }
